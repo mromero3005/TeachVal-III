@@ -11,15 +11,15 @@ ser.baudrate = 9600
 ser.open()
 
 #ser.write('@STEP 240,-100,-100,-300,-100,-100,-100,0\r')  #simultaneous all joints
-ser.write('@STEP 240,-100,-0,0,0,0,0,0\r') 
+ser.write('@STEP 240,884.0,1255.77,-37.12,0,0,0,0\r') 
 time.sleep(3)
 ##
 #ser.write('@STEP 240,100,100,300,100,100,100,0\r')  #simultaneous reverse
-ser.write('@STEP 240,-100,0,0,0,0,0,0\r')
-time.sleep(3)
+# ser.write('@STEP 240,-100,0,0,0,0,0,0\r')
+# time.sleep(3)
 
-ser.write('@STEP 240,-100,0,50,0,0,0,0\r')
-time.sleep(3)
+# ser.write('@STEP 240,-100,0,50,0,0,0,0\r')
+# time.sleep(3)
 
     
 ##ser.write('@RESET\r') #clears all stepper registers

@@ -5,43 +5,60 @@ Created on Feb 22, 2018
 
 @author: ggcuser
 '''
+from numpy import sign
 
-class Location(object):
+class Location:
     '''
     classdocs
     '''
     C = 2*math.pi  # of radians
-    B = 7072/C  # # of motor steps in 1 radian
+    B = 7072/C  # # of motor steps in 1 radian original 7072
     S = 7072/C
     E = 4158/C
     W = 1536/C
+    S6 = 2330/C
+    
+    
+    S1 = 7072/C  # # of motor steps in 1 radian original 7072
+    S2 = 7072/C
+    S3 = 4158/C
+    S4 = 1536/C
+    S5 = S4
+    S6 = 2330/C
+    
+    P1 = 0 #page 157 line 133
+    P2 = -508
+    P3 = 1162
+    P4 = 364
+    P5 = P4
+    P6 = 0
 
-    H, L, LL = 7.68, 7.00, 3.8  # lengths of arms and height of shoulder
-    X, Y, Z, PITCH, ROLL = 0.0  # cartesian values
+    H, L, LL = 7.625, 7.00, 3.8  # lengths of arms and height of shoulder
+    X, Y, Z, PITCH, ROLL = 0,0,0,0,0 # cartesian values
 
     global BASE, SHOULDER, ELBOW, RIGHTWRIST, LEFTWRIST, GRIPPER
-    BASE, SHOULDER, ELBOW, RIGHTWRIST, LEFTWRIST, GRIPPER = 0
+    BASE, SHOULDER, ELBOW, RIGHTWRIST, LEFTWRIST, GRIPPER = 0,0,0,0,0,0
     NAME = ""
     error = ""
     valid = True
     OS = 1.625
 
-    def __init__(self, x, y, z, p, r, n):
-        X = x - Location.OS
-        Y = y
-        Z = z
-        PITCH = p
-        ROLL = r
-        BASE = self.findBase((X + Location.OS), Y)
-        RR = self.getRR(X+Location.OS, Y)
-        R0 = self.getR0(RR, PITCH)
-        alpha = self.findAlpha(RR, R0, Z, PITCH)
-        beta = self.findBeta(RR, R0, Z, PITCH)
-        SHOULDER = self.findShoulder(alpha, beta)
-        ELBOW = self.findElbow(alpha, beta)
-        RIGHTWRIST = self.findRightWrist(PITCH, ROLL)
-        LEFTWRIST = self.findLeftWrist(PITCH, ROLL)
-        NAME = n
+#     def __init__(self, x, y, z, p, r, n):
+#         X = x - Location.OS
+#         Y = y
+#         Z = z
+#         PITCH = p
+#         ROLL = r
+#         BASE = self.findBase((X + Location.OS), Y)
+#         RR = self.getRR(X+Location.OS, Y)
+#         R0 = self.getR0(RR, PITCH)
+#         alpha = self.findAlpha(RR, R0, Z, PITCH)
+#         beta = self.findBeta(RR, R0, Z, PITCH)
+#         SHOULDER = self.findShoulder(alpha, beta)
+#         ELBOW = self.findElbow(alpha, beta)
+#         RIGHTWRIST = self.findRightWrist(PITCH, ROLL)
+#         LEFTWRIST = self.findLeftWrist(PITCH, ROLL)
+#         NAME = n
 
     ################ Forward Solutions from motor steps to cartesian ###############3
     def findX(self, b, s, e, p):
@@ -64,28 +81,71 @@ class Location(object):
 
     ################### My Own Backward Solution #############################################
     
-    def cartToSteps(self, x, y, z, r, p, r1):
+    def cartToSteps(self, x, y, z, r, p):
         import serial
         import time
+        # Referenced page 159 of TCM Manual
+#         x = 5 + x
+        r1 = 1
         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
         #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
         #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
         ser.close()
         ser.baudrate = 9600
         ser.open()
-        base = math.atan(y/x)
-        RR = math.sqrt(x**2 + y**2)
-        o5 = p + r + r1 * base
-        o4 = p - r - r1 * base
-        r0 = RR - Location.LL * math.cos(p)
-        z0 = z - Location.LL * math.sin(p) - Location.H
-        beta = math.atan(z0/r0)
-        alpha = math.atan(4*Location.L**2/(r0**2 + z0**2) - 1 )
-        shoulder = alpha + beta
-        elbow = beta - alpha
+        if x == 0:
+            base = round(sign(y) * math.pi/2) 
+            print 'entered x=0 condition'
+        else :
+            base = round(math.atan(y/x) * Location.B)
+            T1 = math.atan(y/x)
+            print base
+            print 'value of base in else condition = ' + str(base)
+        RR = math.hypot(x, y)
+        if RR < 2.25 and z < 15 :
+            print 'hand too close to body'
+            
+        if RR > 17.8:
+            print 'reach out of range'
+        LW = -((math.radians(p) + math.radians(r)) * Location.W)
+        RW = -((math.radians(p) - math.radians(r)) * Location.W)
+        r0 = (RR - Location.LL * math.cos(math.radians(p))) - Location.H
+        if r0 < 3.5 and x < 2.25 and z < 1.25:
+            if p < -90 / Location.C:
+                print 'hand interferes with base'
+        z0 = (z - Location.LL * math.sin(math.radians(p))) - Location.H
+        if r0 == 0:
+            beta = sign(z0* math.pi/2)
+        else:
+            beta = math.atan(z0/r0)
+#         alpha = math.atan(math.sqrt(((4*Location.L*Location.L)/((r0*r0)+(z0*z0))) - 1 ))
+        alpha = (r0*r0) + (z0*z0)
+        alpha = (4*Location.L * Location.L) / (alpha -1)
+        if alpha < 0:
+            print 'reach out of range for shoulder and elbow'
+        else:
+            math.atan(math.sqrt(alpha))
+        T2 = alpha + beta
+        T3 = beta - alpha
+        T4 = p - r - r1 * T1
+        T5 = p + r + r1 * T1
+        W1 = (Location.S1 * T1 + 0.5) - Location.P1
+        W2 = (Location.S2 * T2 + 0.5) - Location.P2
+        W3 = (Location.S3 * T3 + 0.5) - Location.P3
+        W4 = (Location.S4 * T4 + 0.5) - Location.P4
+        W5 = (Location.S5 * T5 + 0.5) - Location.P5
+        #line 5210 - 5250 if condition in manual
         
-        ser.write('@STEP 240,base,0,0,0,0,0,0\r')
+#         shoulder = round(-((alpha + beta) * Location.S))
+        elbow = round(-((beta - alpha) * Location.E))
+#         print base , shoulder, elbow
+#         base = base - 0.0
+#         shoulder = shoulder - -1846.0
+#         elbow = elbow - -66.0
+#         print 'new base =' + str(base) + 'new shoulder =' + str(shoulder) + 'new elbow =' + str(elbow)
+        ser.write('@STEP 240,' + str(W1) + ',' + str(W2) + ',' + str(W3) + ',' + str(W4)+ ',' + str(W5)+ ','+ str(W3) + ',0\r')
         time.sleep(3)  # in seconds
+        ser.close()
         
     #################### End my own Backward Solution ########################################
     def findBase(self, x, y):
@@ -176,40 +236,37 @@ class Location(object):
         temp = {BASE, SHOULDER, ELBOW, RIGHTWRIST, LEFTWRIST, GRIPPER}
         return temp
     #####################################################################End Location class
-class RobotComm:
-    import serial
-    #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
-    ser = serial.Serial('/dev/tty.usbserial')  #For Mac
-    #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
-
-    def step(self, SP, B, S, E, R, L, G):
-        return '@STEP '+SP+' '+B+' '+S+' '+E+' '+R+' '+L+' '+(G+E)+'\r'
+# class RobotComm:
+#     import serial
+#     #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
+#     #ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+#     #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
+# 
+#     def step(self, SP, B, S, E, R, L, G):
+#         return '@STEP '+SP+' '+B+' '+S+' '+E+' '+R+' '+L+' '+(G+E)+'\r'
 
 
 
 #############################################################################End of RobotComm class   
 
-        class Microbot:
+#         class Microbot:
+#     
+#             import serial
+#             import time
+#     
+#             Home = Location(5, 0, 0, -90, 0, "HOME")
+#             FAST = 240
+#             MEDIUM = 190
+#             SLOW = 140
+#             speed = FAST
     
-            import serial
-            import time
-    
-            Home = Location(5, 0, 0, -90, 0, "HOME")
-            FAST = 240
-            MEDIUM = 190
-            SLOW = 140
-            speed = FAST
-            
-    
-    
-    
-    
+def main():
+    #self.move(0, 0, 0, 0, 0)
+    Home = (5, 0, 0, -90, 0)
+    location = Location()
+    location.cartToSteps(-6.0, 0.0, 0.0, -90, 0.0)
+    print 'Finished operation'
 
+if __name__ == '__main__':
 
-    def main(self):
-        #self.move(0, 0, 0, 0, 0)
-        self.step()
-
-        if __name__ == '__main__':
-
-            self.main()
+    main()
