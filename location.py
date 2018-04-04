@@ -6,6 +6,7 @@ Created on Feb 22, 2018
 @author: ggcuser
 '''
 from numpy import sign
+from math import sqrt
 
 class Location:
     '''
@@ -16,7 +17,7 @@ class Location:
     S = 7072/C
     E = 4158/C
     W = 1536/C
-    S6 = 2330/C
+#     S6 = 2330/C # steps / inch
     
     
     S1 = 7072/C  # # of motor steps in 1 radian original 7072
@@ -24,10 +25,10 @@ class Location:
     S3 = 4158/C
     S4 = 1536/C
     S5 = S4
-    S6 = 2330/C
+    S6 = 2330/C # steps / inch
     
     P1 = 0 #page 157 line 133
-    P2 = -508
+    P2 =- 508
     P3 = 1162
     P4 = 364
     P5 = P4
@@ -87,44 +88,49 @@ class Location:
         # Referenced page 159 of TCM Manual
 #         x = 5 + x
         r1 = 1
+        p = p/Location.C
+        r = r/Location.C
         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
         #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
         #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
         ser.close()
         ser.baudrate = 9600
         ser.open()
+        ser.write('@RESET, 0\r') # Reset robot register counters
         if x == 0:
-            base = round(sign(y) * math.pi/2) 
-            print 'entered x=0 condition'
+            T1 = round(sign(y) * math.pi / 2) 
+            print 'entered x = 0 condition'
         else :
-            base = round(math.atan(y/x) * Location.B)
-            T1 = math.atan(y/x)
-            print base
-            print 'value of base in else condition = ' + str(base)
-        RR = math.hypot(x, y)
+#             base = round(math.atan(y/x) * Location.B)
+            T1 = math.atan(y / x)
+#             print base
+            print 'value of T1 or base in else condition = ' + str(T1)
+#         RR = math.hypot(x, y)
+        RR = math.sqrt(x * x + y * y)
         if RR < 2.25 and z < 15 :
             print 'hand too close to body'
             
         if RR > 17.8:
             print 'reach out of range'
-        LW = -((math.radians(p) + math.radians(r)) * Location.W)
-        RW = -((math.radians(p) - math.radians(r)) * Location.W)
-        r0 = (RR - Location.LL * math.cos(math.radians(p))) - Location.H
+#         LW = -((math.radians(p) + math.radians(r)) * Location.W)
+#         RW = -((math.radians(p) - math.radians(r)) * Location.W)
+#         r0 = (RR - Location.LL * math.cos(math.radians(p))) - Location.H
+        r0 = RR - Location.LL * math.cos(p)
         if r0 < 3.5 and x < 2.25 and z < 1.25:
-            if p < -90 / Location.C:
+            if p < -90 / Location.C :
                 print 'hand interferes with base'
-        z0 = (z - Location.LL * math.sin(math.radians(p))) - Location.H
+        z0 = z - Location.LL * math.sin(p) - Location.H #original radians(p)
         if r0 == 0:
-            beta = sign(z0* math.pi/2)
+            beta = (sign(z0)) * math.pi / 2
         else:
             beta = math.atan(z0/r0)
 #         alpha = math.atan(math.sqrt(((4*Location.L*Location.L)/((r0*r0)+(z0*z0))) - 1 ))
-        alpha = (r0*r0) + (z0*z0)
-        alpha = (4*Location.L * Location.L) / (alpha -1)
+        alpha = r0 * r0 + z0 * z0
+        alpha = 4 * Location.L * Location.L / alpha - 1
         if alpha < 0:
             print 'reach out of range for shoulder and elbow'
         else:
-            math.atan(math.sqrt(alpha))
+            alpha = math.atan(math.sqrt(alpha))
         T2 = alpha + beta
         T3 = beta - alpha
         T4 = p - r - r1 * T1
@@ -135,22 +141,131 @@ class Location:
         W4 = (Location.S4 * T4 + 0.5) - Location.P4
         W5 = (Location.S5 * T5 + 0.5) - Location.P5
         #line 5210 - 5250 if condition in manual
+        #Subtractions from default position
+        W1 = round(W1 - 0.5)
+        W2 = round(W2 - 26.901)
+        W3 = round(-(W3 - -2750.74))
+        W4 = round(W4 - 3138.160)
+        W5 = round(-(W5 - -3865.1601)) #made negative
+
+#         W1 = round(W1 - 0.5)
+#         W2 = round(W2 - 319.895)
+#         W3 = round(-(W3 - -2463.248))
+#         W4 = round(W4 - 3138.16)
+#         W5 = round(-(W5 - -3865.1601)) #made negative
+
+#         Test subtracting initial S1, S@ etc
+#         W1 = round(W1 - 0.5)
+#         W2 = round(W2 - 508)
+#         W3 = round(W3 +1162)
+#         W4 = round(W4 + 284)
+#         W5 = round((W5 - -3865.1601))
         
 #         shoulder = round(-((alpha + beta) * Location.S))
-        elbow = round(-((beta - alpha) * Location.E))
+#         elbow = round(-((beta - alpha) * Location.E))
 #         print base , shoulder, elbow
 #         base = base - 0.0
 #         shoulder = shoulder - -1846.0
 #         elbow = elbow - -66.0
 #         print 'new base =' + str(base) + 'new shoulder =' + str(shoulder) + 'new elbow =' + str(elbow)
+        print W1, W2, W3, W4, W5
         ser.write('@STEP 240,' + str(W1) + ',' + str(W2) + ',' + str(W3) + ',' + str(W4)+ ',' + str(W5)+ ','+ str(W3) + ',0\r')
         time.sleep(3)  # in seconds
         ser.close()
         
+    def closeGrip(self):
+        import serial
+        import time
+        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+        #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
+        #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
+        ser.close()
+        ser.baudrate = 9600
+        ser.open()
+        ser.write('@CLOSE, 0\r')
+        time.sleep(2)
+        inputRead = ser.read()
+#         time.sleep(3)
+        print inputRead
+#         time.sleep(2)  # in seconds
+        ser.close()
+        
+    def moveAndReturn(self):
+        #From page 147 of TCM Robot manual
+        import serial
+        import time
+        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+        #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
+        #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
+        ser.close()
+        ser.baudrate = 9600
+        ser.open()
+#         ser.write('@RESET, 0\r') # Reset robot register counters
+        ser.write('@READ, \r')
+        print 'Reading current amount moved'
+#         inputString = ''
+        list = []
+#         str = ""
+        i = 0
+#         while (ord(ser.read()) == 13) or (ord(ser.read()) == 44):
+#         while (ord(ser.read()) != 13):
+#         while (i < 17):
+#             #time.sleep(2)
+#             list.append(ser.read().split(', '))
+        for i in range (0,21):
+#             print ser.read()
+            list.append(ser.read())
+        list.remove('1') # removing first 1 which is not needed for step counts
+        list.remove('\r') # removing carriage return since not needed for step countss
+        stringver = ''.join(list) #Turns list into string
+        list2 = stringver.split(',') #Splits string on comma to capture full value per index
+        
+        print list
+        print stringver
+        print list2
+        list2 = [int(i) for i in list2]
+        print list2
+#         print  iter(list2).
+#         print iter(list2).next()
+        print -list2[1]
+        a = str(-list2[0])
+        b = str(-list2[1])
+        c = str(-list2[2])
+        d = str(-list2[3])
+        e = str(-list2[4])
+        f = str(-list2[5])
+        print a,b,c,d,e,f
+        
+#         ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ','+ f + ',0\r')
+#         ser.write('@STEP 240,' + str(-(list2[0])) + ',' + str(-(list2[1])) + ',' + str(-(list2[2])) + ',' + str(-(list2[3]))+ ',' + str(-(list2[4]))+ ','+ str(-(list2[5])) + ',0\r')
+
+#        
+        
+    def resetArm(self):
+        import serial
+        import time
+        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+        #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
+        #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
+        ser.close()
+        ser.baudrate = 9600
+        ser.open()
+        ser.write('@RESET, \r')
+        ser.close()
+        
+    def closeSerialPort(self):
+        import serial
+#     #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
+        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+#     #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
+        ser.baudrate = 9600
+        ser.close()
+        
+        
     #################### End my own Backward Solution ########################################
     def findBase(self, x, y):
         if x == 0.0:
-            return round((math.sin(y) * (math.pi/2)))
+            return round((math.sin(y) * (math.pi / 2)))
         else:
             return round(((math.atan(y/x))*Location.B))
 
@@ -264,7 +379,15 @@ def main():
     #self.move(0, 0, 0, 0, 0)
     Home = (5, 0, 0, -90, 0)
     location = Location()
-    location.cartToSteps(-6.0, 0.0, 0.0, -90, 0.0)
+#     location.cartToSteps(5.0, 0.0, 0, -90, 0.0)
+    location.moveAndReturn()
+    location.closeSerialPort()
+    
+#     location.resetArm()
+#     location.moveAndReturn()
+    
+#     location.cartToSteps(5.0, 0.0,-0.25, -90, 0.0)
+#     location.closeGrip()
     print 'Finished operation'
 
 if __name__ == '__main__':
