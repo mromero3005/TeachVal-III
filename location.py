@@ -1,5 +1,13 @@
 import math
 import array
+import serial
+import time
+ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+# ser = serial.Serial('/dev/ttyUSB0')  #For Linux
+# ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
+ser.close()
+ser.baudrate = 9600
+ser.open()
 '''
 Created on Feb 22, 2018
 
@@ -83,8 +91,7 @@ class Location:
     ################### My Own Backward Solution #############################################
     
     def cartToSteps(self, x, y, z, r, p):
-        import serial
-        import time
+        
         # Referenced page 159 of TCM Manual
 #         x = 5 + x
         r1 = 1
@@ -174,8 +181,6 @@ class Location:
         ser.close()
         
     def closeGrip(self):
-        import serial
-        import time
         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
         #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
         #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
@@ -188,18 +193,18 @@ class Location:
 #         time.sleep(3)
         print inputRead
 #         time.sleep(2)  # in seconds
-        ser.close()
+#         ser.close()
         
     def moveAndReturn(self):
         #From page 147 of TCM Robot manual
-        import serial
-        import time
-        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+#         import serial
+#         import time
+#         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
         #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
         #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
-        ser.close()
-        ser.baudrate = 9600
-        ser.open()
+#         ser.close()
+#         ser.baudrate = 9600
+#         ser.open()
 #         ser.write('@RESET, 0\r') # Reset robot register counters
         ser.write('@READ, \r')
         print 'Reading current amount moved'
@@ -212,7 +217,8 @@ class Location:
 #         while (i < 17):
 #             #time.sleep(2)
 #             list.append(ser.read().split(', '))
-        for i in range (0,21):
+#         print ser.read()
+        for i in range (0,25):
 #             print ser.read()
             list.append(ser.read())
         list.remove('1') # removing first 1 which is not needed for step counts
@@ -224,6 +230,7 @@ class Location:
         print stringver
         print list2
         list2 = [int(i) for i in list2]
+        list2 = list2[:6]
         print list2
 #         print  iter(list2).
 #         print iter(list2).next()
@@ -235,30 +242,40 @@ class Location:
         e = str(-list2[4])
         f = str(-list2[5])
         print a,b,c,d,e,f
-        
-#         ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ','+ f + ',0\r')
+        time.sleep(2)
+        ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ','+ f + ',0\r')
+        time.sleep(3)
 #         ser.write('@STEP 240,' + str(-(list2[0])) + ',' + str(-(list2[1])) + ',' + str(-(list2[2])) + ',' + str(-(list2[3]))+ ',' + str(-(list2[4]))+ ','+ str(-(list2[5])) + ',0\r')
 
 #        
         
     def resetArm(self):
-        import serial
-        import time
-        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+        print 'Entered resetArm'
+#         import serial
+#         import time
+#         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
         #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
         #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
-        ser.close()
+#         ser.close()
+#         print 'closed port'
         ser.baudrate = 9600
-        ser.open()
+        print 'baud rate 9600'
+#         ser.open()
+#         print 'opened port'
         ser.write('@RESET, \r')
-        ser.close()
+#         print ser.write('@READ, \r')
+        print 'Resetting robot arm'
+#         ser.close()
         
     def closeSerialPort(self):
-        import serial
+#         import serial
+#         import time
 #     #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
-        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
+#         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
 #     #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
-        ser.baudrate = 9600
+#         ser.baudrate = 9600
+#         ser.open()
+        time.sleep(2)
         ser.close()
         
         
@@ -380,10 +397,12 @@ def main():
     Home = (5, 0, 0, -90, 0)
     location = Location()
 #     location.cartToSteps(5.0, 0.0, 0, -90, 0.0)
+
     location.moveAndReturn()
+    location.resetArm()
     location.closeSerialPort()
     
-#     location.resetArm()
+
 #     location.moveAndReturn()
     
 #     location.cartToSteps(5.0, 0.0,-0.25, -90, 0.0)
