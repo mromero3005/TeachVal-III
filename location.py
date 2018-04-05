@@ -11,10 +11,9 @@ ser.open()
 '''
 Created on Feb 22, 2018
 
-@author: ggcuser
+@author: Cesar Mauricio Romero-Pedraza
 '''
 from numpy import sign
-from math import sqrt
 
 class Location:
     '''
@@ -218,9 +217,17 @@ class Location:
 #             #time.sleep(2)
 #             list.append(ser.read().split(', '))
 #         print ser.read()
-        for i in range (0,25):
+#         timeout = 10   # [seconds]
+#         timeout_start = time.time()
+#         test = 0
+#         while time.time() < timeout_start + timeout:
+        # Need to make a variable to hold number of commas and exit loop when 6 commas reached
+        for i in range (0,24):
 #             print ser.read()
             list.append(ser.read())
+            print 'looping read to list'
+            print i
+#                 
         list.remove('1') # removing first 1 which is not needed for step counts
         list.remove('\r') # removing carriage return since not needed for step countss
         stringver = ''.join(list) #Turns list into string
@@ -229,12 +236,14 @@ class Location:
         print list
         print stringver
         print list2
-        list2 = [int(i) for i in list2]
         list2 = list2[:6]
+        list2 = [int(i) for i in list2]
+        if(list2.__contains__('')): # if an empty string then remove
+            list2.remove('') # removes an empty string
         print list2
 #         print  iter(list2).
 #         print iter(list2).next()
-        print -list2[1]
+#         print -list2[1]
         a = str(-list2[0])
         b = str(-list2[1])
         c = str(-list2[2])
@@ -243,8 +252,10 @@ class Location:
         f = str(-list2[5])
         print a,b,c,d,e,f
         time.sleep(2)
+        print 'Robot moving'
         ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ','+ f + ',0\r')
-        time.sleep(3)
+        time.sleep(3) #This delay allows message to be sent to robot before serial port is closed
+
 #         ser.write('@STEP 240,' + str(-(list2[0])) + ',' + str(-(list2[1])) + ',' + str(-(list2[2])) + ',' + str(-(list2[3]))+ ',' + str(-(list2[4]))+ ','+ str(-(list2[5])) + ',0\r')
 
 #        
