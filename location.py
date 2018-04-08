@@ -177,18 +177,13 @@ class Location:
         print W1, W2, W3, W4, W5
         ser.write('@STEP 240,' + str(W1) + ',' + str(W2) + ',' + str(W3) + ',' + str(W4)+ ',' + str(W5)+ ','+ str(W3) + ',0\r')
         time.sleep(3)  # in seconds
-        ser.close()
+#         ser.close()
         
     def closeGrip(self):
-        ser = serial.Serial('/dev/tty.usbserial')  #For Mac
-        #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
-        #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
-        ser.close()
-        ser.baudrate = 9600
-        ser.open()
         ser.write('@CLOSE, 0\r')
         time.sleep(2)
-        inputRead = ser.read()
+        inputRead = ser.read() # if successful communication inputRead = 1 , 0 = unsuccessful
+        # And 2 = stop key pressed on teach control pemndant.
 #         time.sleep(3)
         print inputRead
 #         time.sleep(2)  # in seconds
@@ -237,7 +232,7 @@ class Location:
         print stringver
         print list2
         list2 = list2[:6]
-        list2 = [int(i) for i in list2]
+        list2 = [int(i) for i in list2] # Converts list2 to int values from String values
         if(list2.__contains__('')): # if an empty string then remove
             list2.remove('') # removes an empty string
         print list2
@@ -262,30 +257,12 @@ class Location:
         
     def resetArm(self):
         print 'Entered resetArm'
-#         import serial
-#         import time
-#         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
-        #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
-        #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
-#         ser.close()
-#         print 'closed port'
-        ser.baudrate = 9600
-        print 'baud rate 9600'
-#         ser.open()
-#         print 'opened port'
         ser.write('@RESET, \r')
 #         print ser.write('@READ, \r')
         print 'Resetting robot arm'
 #         ser.close()
         
     def closeSerialPort(self):
-#         import serial
-#         import time
-#     #ser = serial.Serial('/dev/ttyUSB0')  #For Linux
-#         ser = serial.Serial('/dev/tty.usbserial')  #For Mac
-#     #ser = serial.Serial('com4')  #com4 first on left, com3 first on right. For Windows
-#         ser.baudrate = 9600
-#         ser.open()
         time.sleep(2)
         ser.close()
         
