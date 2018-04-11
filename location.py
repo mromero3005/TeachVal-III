@@ -190,6 +190,7 @@ class Location:
 #         ser.close()
         
     def moveAndReturn(self):
+        from datetime import datetime
         #From page 147 of TCM Robot manual
 #         import serial
 #         import time
@@ -217,11 +218,33 @@ class Location:
 #         test = 0
 #         while time.time() < timeout_start + timeout:
         # Need to make a variable to hold number of commas and exit loop when 6 commas reached
-        for i in range (0,24):
+        commaCount = 1
+        breakCount = 1
+        carriageReturnCount = 0
+#         for i in range (0,24):
+        start_time = datetime.now()
+        print(start_time)
+        while (carriageReturnCount != 2):
+#             if(commaCount == 6):
+#                 breakCount = breakCount +1
+#                 if(list.__getitem__("\r")):
+#                     break;
 #             print ser.read()
+#             time_delta = datetime.now() - start_time
+#             print(time_delta)
+#             if time_delta.seconds >= 1:
+#                 break
+#         if(carriageReturnCount == 2):
+#             break;
             list.append(ser.read())
+            commaCount = list.count(',')
+            carriageReturnCount = list.count('\r')
             print 'looping read to list'
-            print i
+            print commaCount
+            print carriageReturnCount
+            
+               
+#             print i
 #                 
         list.remove('1') # removing first 1 which is not needed for step counts
         list.remove('\r') # removing carriage return since not needed for step countss
