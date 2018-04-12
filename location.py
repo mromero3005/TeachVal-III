@@ -188,6 +188,63 @@ class Location:
         print inputRead
 #         time.sleep(2)  # in seconds
 #         ser.close()
+
+    def moveTo(self, position):
+        print 'running moveTo'
+        if(position == 'A10'):
+            A10 = [492, 833, -237, 0, 0, -237] 
+            a = str(A10[0])
+            b = str(A10[1])
+            c = str(A10[2])
+            d = str(A10[3])
+            e = str(A10[4])
+            f = str(A10[5])
+            ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ',' + f + ',0\r')
+        
+            
+        if(position == 'E1'):
+            A10 = [-778, 647, 83, 0, 0, 83] 
+            a = str(A10[0])
+            b = str(A10[1])
+            c = str(A10[2])
+            d = str(A10[3])
+            e = str(A10[4])
+            f = str(A10[5])
+            ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ',' + f + ',0\r')
+        
+        if(position == 'G6'):
+            A10 = [157, 729, 456, 0, 0, 456] 
+            a = str(A10[0])
+            b = str(A10[1])
+            c = str(A10[2])
+            d = str(A10[3])
+            e = str(A10[4])
+            f = str(A10[5])
+            ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ',' + f + ',0\r') 
+            
+        if(position == 'A5'):
+            A10 = [-65, 789, -120, 0, 0, -120] 
+            a = str(A10[0])
+            b = str(A10[1])
+            c = str(A10[2])
+            d = str(A10[3])
+            e = str(A10[4])
+            f = str(A10[5])
+            ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ',' + f + ',0\r') 
+            
+        time.sleep(3)
+#         ser.write('@READ, \r')
+        carriageReturnCount = 0
+        while(carriageReturnCount <= 1):
+#             print ser.read()
+            carriageReturnCount = ser.read().count('\r')
+            if(carriageReturnCount == 1):
+                print 'move successful'
+                break
+        
+#         if(carriageReturnCount == 1):    
+#             print 'move successful'
+
         
     def moveAndReturn(self):
         from datetime import datetime
@@ -206,7 +263,7 @@ class Location:
 #         inputString = ''
         list = []
 #         str = ""
-        i = 0
+#         i = 0
 #         while (ord(ser.read()) == 13) or (ord(ser.read()) == 44):
 #         while (ord(ser.read()) != 13):
 #         while (i < 17):
@@ -219,33 +276,17 @@ class Location:
 #         while time.time() < timeout_start + timeout:
         # Need to make a variable to hold number of commas and exit loop when 6 commas reached
         commaCount = 1
-        breakCount = 1
         carriageReturnCount = 0
-#         for i in range (0,24):
         start_time = datetime.now()
         print(start_time)
+        time.sleep(5)
         while (carriageReturnCount != 2):
-#             if(commaCount == 6):
-#                 breakCount = breakCount +1
-#                 if(list.__getitem__("\r")):
-#                     break;
-#             print ser.read()
-#             time_delta = datetime.now() - start_time
-#             print(time_delta)
-#             if time_delta.seconds >= 1:
-#                 break
-#         if(carriageReturnCount == 2):
-#             break;
             list.append(ser.read())
             commaCount = list.count(',')
             carriageReturnCount = list.count('\r')
             print 'looping read to list'
             print commaCount
             print carriageReturnCount
-            
-               
-#             print i
-#                 
         list.remove('1') # removing first 1 which is not needed for step counts
         list.remove('\r') # removing carriage return since not needed for step countss
         stringver = ''.join(list) #Turns list into string
@@ -273,15 +314,37 @@ class Location:
         print 'Robot moving'
         ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ','+ f + ',0\r')
         time.sleep(3) #This delay allows message to be sent to robot before serial port is closed
+        ser.write('@READ, \r')
+        carriageReturnCount = 0
+        while(carriageReturnCount <= 1):
+#             print ser.read()
+            carriageReturnCount = ser.read().count('\r')
+            if(carriageReturnCount == 1):    
+                print 'Return successful'
+                break
+        
+        
 
 #         ser.write('@STEP 240,' + str(-(list2[0])) + ',' + str(-(list2[1])) + ',' + str(-(list2[2])) + ',' + str(-(list2[3]))+ ',' + str(-(list2[4]))+ ','+ str(-(list2[5])) + ',0\r')
 
 #        
-        
+      
+      
+    
     def resetArm(self):
         print 'Entered resetArm'
         ser.write('@RESET, \r')
 #         print ser.write('@READ, \r')
+#         ser.write('@READ, \r')
+        carriageReturnCount = 0
+        while(carriageReturnCount <= 1):
+#             print ser.read()
+            carriageReturnCount = ser.read().count('\r')
+            if(carriageReturnCount == 1):    
+                print 'reset successful'
+                break
+        
+        
         print 'Resetting robot arm'
 #         ser.close()
         
@@ -408,9 +471,27 @@ def main():
     Home = (5, 0, 0, -90, 0)
     location = Location()
 #     location.cartToSteps(5.0, 0.0, 0, -90, 0.0)
-
+    location.moveTo('A10')
+    time.sleep(3)
     location.moveAndReturn()
+    time.sleep(2)
     location.resetArm()
+    time.sleep(3)
+    location.moveTo('E1')
+    time.sleep(3)
+    location.moveAndReturn()
+    time.sleep(2)
+    location.resetArm()
+#     time.sleep(3)
+#     location.moveTo('G6')
+#     time.sleep(10)
+#     location.moveAndReturn()
+#     location.resetArm()
+#     time.sleep(3)
+#     location.moveTo('A5')
+#     time.sleep(10)
+#     location.moveAndReturn()
+#     location.resetArm()
     location.closeSerialPort()
     
 
