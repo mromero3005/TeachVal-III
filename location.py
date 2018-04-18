@@ -178,14 +178,36 @@ class Location:
         ser.write('@STEP 240,' + str(W1) + ',' + str(W2) + ',' + str(W3) + ',' + str(W4)+ ',' + str(W5)+ ','+ str(W3) + ',0\r')
         time.sleep(3)  # in seconds
 #         ser.close()
+
+    def open(self):
+        ser.write('@STEP 240,0,0,0,0,0,400,0\r')
+        carriageReturnCount = 0
+#         time.sleep(3)
+        while(carriageReturnCount <= 1):
+#             print ser.read()
+            carriageReturnCount = ser.read().count('\r')
+#             time.sleep(2)
+            if(carriageReturnCount == 1):
+                print 'close successful'
+                break
+    
         
     def closeGrip(self):
         ser.write('@CLOSE, 0\r')
         time.sleep(2)
-        inputRead = ser.read() # if successful communication inputRead = 1 , 0 = unsuccessful
+        carriageReturnCount = 0
+#         time.sleep(3)
+        while(carriageReturnCount <= 1):
+#             print ser.read()
+            carriageReturnCount = ser.read().count('\r')
+#             time.sleep(2)
+            if(carriageReturnCount == 1):
+                print 'close successful'
+                break
+#         inputRead = ser.read() # if successful communication inputRead = 1 , 0 = unsuccessful
         # And 2 = stop key pressed on teach control pemndant.
 #         time.sleep(3)
-        print inputRead
+#         print inputRead
 #         time.sleep(2)  # in seconds
 #         ser.close()
 
@@ -284,11 +306,11 @@ class Location:
         carriageReturnCount = 0
         start_time = datetime.now()
         print(start_time)
-        time.sleep(5)
+#         time.sleep(5)
         while (carriageReturnCount != 2):
             list.append(ser.read())
             commaCount = list.count(',')
-            time.sleep(.01)
+#             time.sleep(.01)
             carriageReturnCount = list.count('\r')
             print 'looping read to list'
             print commaCount
@@ -322,10 +344,8 @@ class Location:
         time.sleep(3) #This delay allows message to be sent to robot before serial port is closed
 #         ser.write('@READ, \r')
         carriageReturnCount = 0
-#         time.sleep(3)
         while(carriageReturnCount <= 1):
 #             print ser.read()
-#             time.sleep(2)
             carriageReturnCount = ser.read().count('\r')
             if(carriageReturnCount == 1):    
                 print 'Return successful'
@@ -348,7 +368,6 @@ class Location:
         time.sleep(2)
         while(carriageReturnCount <= 1):
 #             print ser.read()
-            time.sleep(2)
             carriageReturnCount = ser.read().count('\r')
             if(carriageReturnCount == 1):    
                 print 'reset successful'
@@ -482,26 +501,30 @@ def main():
     location = Location()
 #     location.cartToSteps(5.0, 0.0, 0, -90, 0.0)
     location.moveTo('A10')
-    time.sleep(3)
+    time.sleep(2)
+    location.open()
+    time.sleep(2)
+    location.closeGrip()
+    time.sleep(2)
     location.moveAndReturn()
     time.sleep(2)
     location.resetArm() # reset when home
-    time.sleep(3)
+    time.sleep(2)
     location.moveTo('E1')
-    time.sleep(3)
+    time.sleep(2)
     location.moveAndReturn()
     time.sleep(2)
     location.resetArm()
-#     time.sleep(3)
-#     location.moveTo('G6')
-#     time.sleep(10)
-#     location.moveAndReturn()
-#     location.resetArm()
-#     time.sleep(3)
-#     location.moveTo('A5')
-#     time.sleep(10)
-#     location.moveAndReturn()
-#     location.resetArm()
+    time.sleep(2)
+    location.moveTo('G6')
+    time.sleep(2)
+    location.moveAndReturn()
+    location.resetArm()
+    time.sleep(2)
+    location.moveTo('A5')
+    time.sleep(2)
+    location.moveAndReturn()
+    location.resetArm()
     location.closeSerialPort()
     
 
