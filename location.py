@@ -232,12 +232,14 @@ class Location:
             f = str(A10[5])
             ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ',' + f + ',0\r') 
             
-        time.sleep(3)
+#         time.sleep(3)
 #         ser.write('@READ, \r')
         carriageReturnCount = 0
+#         time.sleep(3)
         while(carriageReturnCount <= 1):
 #             print ser.read()
             carriageReturnCount = ser.read().count('\r')
+#             time.sleep(2)
             if(carriageReturnCount == 1):
                 print 'move successful'
                 break
@@ -258,6 +260,9 @@ class Location:
 #         ser.baudrate = 9600
 #         ser.open()
 #         ser.write('@RESET, 0\r') # Reset robot register counters
+# sending the @READ command tells the robot I want to read the registers of the robot arm. 
+# there are 6 registers, 1 for each stepper motor that keeps track of the step count in each
+# motor separately. 
         ser.write('@READ, \r')
         print 'Reading current amount moved'
 #         inputString = ''
@@ -283,6 +288,7 @@ class Location:
         while (carriageReturnCount != 2):
             list.append(ser.read())
             commaCount = list.count(',')
+            time.sleep(.01)
             carriageReturnCount = list.count('\r')
             print 'looping read to list'
             print commaCount
@@ -314,10 +320,12 @@ class Location:
         print 'Robot moving'
         ser.write('@STEP 240,' + a + ',' + b + ',' + c + ',' + d + ',' + e + ','+ f + ',0\r')
         time.sleep(3) #This delay allows message to be sent to robot before serial port is closed
-        ser.write('@READ, \r')
+#         ser.write('@READ, \r')
         carriageReturnCount = 0
+#         time.sleep(3)
         while(carriageReturnCount <= 1):
 #             print ser.read()
+#             time.sleep(2)
             carriageReturnCount = ser.read().count('\r')
             if(carriageReturnCount == 1):    
                 print 'Return successful'
@@ -337,8 +345,10 @@ class Location:
 #         print ser.write('@READ, \r')
 #         ser.write('@READ, \r')
         carriageReturnCount = 0
+        time.sleep(2)
         while(carriageReturnCount <= 1):
 #             print ser.read()
+            time.sleep(2)
             carriageReturnCount = ser.read().count('\r')
             if(carriageReturnCount == 1):    
                 print 'reset successful'
@@ -475,7 +485,7 @@ def main():
     time.sleep(3)
     location.moveAndReturn()
     time.sleep(2)
-    location.resetArm()
+    location.resetArm() # reset when home
     time.sleep(3)
     location.moveTo('E1')
     time.sleep(3)
