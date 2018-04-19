@@ -179,6 +179,20 @@ class Location:
         time.sleep(3)  # in seconds
 #         ser.close()
 
+    def readCSVCoordinates(self):
+        import csv
+#         csv.reader
+        file = open('64_Positions.txt','r')
+        coordinateArray = []
+        
+        coordinateArray = file.readlines()
+        print coordinateArray
+#         csvfile = open('64_Positions.csv','rb')
+#         csvFileArray = []
+#         for row in  csv.reader(csvfile, delimiter = ','):
+#             csvFileArray.append(row)
+#         print(csvFileArray[0])
+
     def open(self):
         ser.write('@STEP 240,0,0,0,0,0,400,0\r')
         carriageReturnCount = 0
@@ -350,15 +364,10 @@ class Location:
             if(carriageReturnCount == 1):    
                 print 'Return successful'
                 break
-        
-        
 
 #         ser.write('@STEP 240,' + str(-(list2[0])) + ',' + str(-(list2[1])) + ',' + str(-(list2[2])) + ',' + str(-(list2[3]))+ ',' + str(-(list2[4]))+ ','+ str(-(list2[5])) + ',0\r')
 
-#        
-      
-      
-    
+
     def resetArm(self):
         print 'Entered resetArm'
         ser.write('@RESET, \r')
@@ -500,32 +509,37 @@ def main():
     Home = (5, 0, 0, -90, 0)
     location = Location()
 #     location.cartToSteps(5.0, 0.0, 0, -90, 0.0)
-    location.moveTo('A10')
-    time.sleep(2)
-    location.open()
-    time.sleep(2)
-    location.closeGrip()
-    time.sleep(2)
-    location.moveAndReturn()
-    time.sleep(2)
-    location.resetArm() # reset when home
-    time.sleep(2)
-    location.moveTo('E1')
-    time.sleep(2)
-    location.moveAndReturn()
-    time.sleep(2)
-    location.resetArm()
-    time.sleep(2)
-    location.moveTo('G6')
-    time.sleep(2)
-    location.moveAndReturn()
-    location.resetArm()
-    time.sleep(2)
-    location.moveTo('A5')
-    time.sleep(2)
-    location.moveAndReturn()
-    location.resetArm()
-    location.closeSerialPort()
+    location.readCSVCoordinates()
+#     location.moveTo('A10')
+#     time.sleep(1)
+#     location.open()
+#     time.sleep(1)
+#     location.closeGrip()
+#     time.sleep(1)
+#     location.moveAndReturn()
+#     time.sleep(1)
+#     location.resetArm() # reset when home
+#     time.sleep(1)
+#     location.moveTo('E1')
+#     time.sleep(1)
+#     location.open()
+#     time.sleep(1)
+#     location.closeGrip()
+#     time.sleep(1)
+#     location.moveAndReturn()
+#     time.sleep(1)
+#     location.resetArm()
+#     time.sleep(1)
+#     location.moveTo('G6')
+#     time.sleep(1)
+#     location.moveAndReturn()
+#     location.resetArm()
+#     time.sleep(1)
+#     location.moveTo('A5')
+#     time.sleep(1)
+#     location.moveAndReturn()
+#     location.resetArm()
+#     location.closeSerialPort()
     
 
 #     location.moveAndReturn()
