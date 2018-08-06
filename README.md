@@ -1,1 +1,2 @@
 # TeachVal-III
+TeachVal-III is a python program that allows for manipulation of the Microbot TeachMover robot arm. The existing TeachVal-II was written in Java and serial port communication has been phased out of newer Java releases. This led me to chose Python to continue using the TeachMover robot with current serial port support. PySerial is the library that we use for serial port communication and this program works with Mac, Linux and Windows. 
